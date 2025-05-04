@@ -21,10 +21,8 @@ const LandingPage = () => {
       <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-2">
-            <Link href="/">
-              <a className="flex items-center space-x-2">
-                <span className="text-2xl font-bold tracking-tight">CreatorPro</span>
-              </a>
+            <Link href="/" className="flex items-center space-x-2">
+              <span className="text-2xl font-bold tracking-tight">CreatorPro</span>
             </Link>
           </div>
           <div className="flex items-center gap-4">

@@ -33,6 +33,13 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
+// Add type declaration for window object
+declare global {
+  interface Window {
+    timerIntervalId: ReturnType<typeof setInterval> | null;
+  }
+}
+
 // Define time entry types
 interface TimeEntry {
   id: number;
@@ -139,6 +146,13 @@ export default function TimeTracker() {
         description: `Tracked ${formatTime(timerDuration)} for ${timerTask}`,
       });
       setIsTimerActive(false);
+      
+      // Clear the interval
+      if (window.timerIntervalId) {
+        clearInterval(window.timerIntervalId);
+        window.timerIntervalId = null;
+      }
+      
       // Reset timer after stopping
       setTimeout(() => {
         setTimerDuration(0);
@@ -170,13 +184,13 @@ export default function TimeTracker() {
         description: `Tracking time for ${selectedProject}`,
       });
       
-      // Simulate timer increasing - in a real app, this would be more sophisticated
-      const interval = setInterval(() => {
+      // Simulate timer increasing - with more frequent updates for better UX
+      const timerInterval = setInterval(() => {
         setTimerDuration(prev => prev + 1);
-      }, 60000); // Update every minute (for demo purposes)
+      }, 1000); // Update every second for a more responsive timer
       
-      // Cleanup interval
-      return () => clearInterval(interval);
+      // Store interval ID in a ref so we can clear it later
+      window.timerIntervalId = timerInterval;
     }
   };
 

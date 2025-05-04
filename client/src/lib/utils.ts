@@ -108,9 +108,24 @@ export function calculateProgress(completed: number, total: number): number {
   return Math.round((completed / total) * 100);
 }
 
-export function formatTime(time: string | Date): string {
-  if (!time) return '';
+export function formatTime(time: string | Date | number): string {
+  if (time === null || time === undefined) return '';
   
+  // If the input is a number, treat it as minutes and convert to hours and minutes format
+  if (typeof time === 'number') {
+    const hours = Math.floor(time / 60);
+    const minutes = time % 60;
+    
+    if (hours === 0) {
+      return `${minutes}m`;
+    } else if (minutes === 0) {
+      return `${hours}h`;
+    } else {
+      return `${hours}h ${minutes}m`;
+    }
+  }
+  
+  // Otherwise treat as a date/time
   const date = typeof time === 'string' ? new Date(time) : time;
   
   if (!(date instanceof Date) || isNaN(date.getTime())) {
