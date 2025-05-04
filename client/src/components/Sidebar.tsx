@@ -1,198 +1,198 @@
-import { useLocation } from "wouter";
-import { Link } from "wouter";
-import { useI18n } from "@/lib/i18n";
+import React from "react";
+import { useLocation, Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
-import { useTheme } from "@/components/ThemeProvider";
-import { UserAvatar } from "@/components/ui/user-avatar";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { useMobile } from "@/hooks/use-mobile";
 import {
   LayoutDashboard,
-  FolderKanban,
-  Clock,
+  FileText,
   Users,
+  Clock,
   MessageSquare,
-  FileIcon,
+  FolderOpen,
   Target,
-  DollarSign,
-  Bot,
+  CreditCard,
   Settings,
-  Moon,
-  Sun,
-  Monitor,
+  LogOut,
+  Menu,
+  X,
+  BrainCircuit,
+  DollarSign,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 
-interface SidebarLinkProps {
-  href: string;
+type SidebarItem = {
+  title: string;
   icon: React.ReactNode;
-  children: React.ReactNode;
-  badge?: React.ReactNode;
-  isActive?: boolean;
-}
-
-function SidebarLink({ href, icon, children, badge, isActive }: SidebarLinkProps) {
-  return (
-    <Link href={href}>
-      <a
-        className={cn(
-          "nav-link",
-          isActive && "nav-link-active",
-          "relative"
-        )}
-      >
-        {icon}
-        <span className="ml-3">{children}</span>
-        {badge && badge}
-      </a>
-    </Link>
-  );
-}
+  href: string;
+};
 
 export function Sidebar() {
   const [location] = useLocation();
-  const { t } = useI18n();
-  const { theme, toggleTheme } = useTheme();
   const { user, logoutMutation } = useAuth();
+  const { toast } = useToast();
+  const { isMobile, isSidebarOpen, toggleSidebar } = useMobile();
 
   const handleLogout = () => {
-    logoutMutation.mutate();
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => {
+        toast({
+          title: "Logged out",
+          description: "You have been logged out successfully.",
+        });
+      },
+    });
   };
 
+  const sidebarItems: SidebarItem[] = [
+    {
+      title: "Dashboard",
+      icon: <LayoutDashboard className="h-5 w-5" />,
+      href: "/dashboard",
+    },
+    {
+      title: "Projects",
+      icon: <FileText className="h-5 w-5" />,
+      href: "/projects",
+    },
+    {
+      title: "Clients",
+      icon: <Users className="h-5 w-5" />,
+      href: "/clients",
+    },
+    {
+      title: "Time Tracker",
+      icon: <Clock className="h-5 w-5" />,
+      href: "/time-tracker",
+    },
+    {
+      title: "Messages",
+      icon: <MessageSquare className="h-5 w-5" />,
+      href: "/messages",
+    },
+    {
+      title: "Files",
+      icon: <FolderOpen className="h-5 w-5" />,
+      href: "/files",
+    },
+    {
+      title: "Goals",
+      icon: <Target className="h-5 w-5" />,
+      href: "/goals",
+    },
+    {
+      title: "Finances",
+      icon: <CreditCard className="h-5 w-5" />,
+      href: "/finances",
+    },
+    {
+      title: "Payments",
+      icon: <DollarSign className="h-5 w-5" />,
+      href: "/payments",
+    },
+    {
+      title: "AI Assistant",
+      icon: <BrainCircuit className="h-5 w-5" />,
+      href: "/ai-assistant",
+    },
+    {
+      title: "Settings",
+      icon: <Settings className="h-5 w-5" />,
+      href: "/settings",
+    },
+  ];
+
+  if (!user) {
+    return null; // Don't render sidebar if user is not logged in
+  }
+
+  const sidebarClasses = cn(
+    "fixed inset-y-0 left-0 z-50 w-64 bg-background border-r border-border transform transition-transform duration-300 ease-in-out",
+    {
+      "-translate-x-full": isMobile && !isSidebarOpen,
+      "translate-x-0": !isMobile || isSidebarOpen,
+    }
+  );
+
   return (
-    <div className="hidden md:flex md:flex-col md:fixed md:w-64 md:inset-y-0 border-r bg-card">
-      <div className="flex flex-col h-full">
-        {/* Logo and App Name */}
-        <div className="flex items-center h-16 px-4 border-b">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-primary rounded-md flex items-center justify-center text-white">
-              <Monitor className="h-5 w-5" />
+    <>
+      {isMobile && (
+        <button
+          onClick={toggleSidebar}
+          className="fixed left-4 top-4 z-50 rounded-md bg-primary p-2 text-primary-foreground md:hidden"
+        >
+          {isSidebarOpen ? (
+            <X className="h-6 w-6" />
+          ) : (
+            <Menu className="h-6 w-6" />
+          )}
+        </button>
+      )}
+
+      {/* Backdrop for mobile */}
+      {isMobile && isSidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+          onClick={toggleSidebar}
+        />
+      )}
+
+      <aside className={sidebarClasses}>
+        <div className="flex h-full flex-col overflow-y-auto">
+          <div className="border-b border-border p-4">
+            <Link href="/dashboard">
+              <a className="flex items-center space-x-2">
+                <div className="font-bold text-2xl text-primary">CreatorPro</div>
+              </a>
+            </Link>
+          </div>
+
+          <nav className="flex-1 p-4">
+            <ul className="space-y-1.5">
+              {sidebarItems.map((item) => (
+                <li key={item.href}>
+                  <Link href={item.href}>
+                    <a
+                      className={cn(
+                        "flex items-center rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground",
+                        location === item.href
+                          ? "bg-accent text-accent-foreground"
+                          : "text-muted-foreground"
+                      )}
+                    >
+                      {item.icon}
+                      <span className="ml-3">{item.title}</span>
+                    </a>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          <div className="border-t border-border p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
+                  {user.fullName ? user.fullName.charAt(0).toUpperCase() : user.username.charAt(0).toUpperCase()}
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium">{user.fullName || user.username}</p>
+                  <p className="text-xs text-muted-foreground">{user.email || "No email"}</p>
+                </div>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={handleLogout}
+                disabled={logoutMutation.isPending}
+              >
+                <LogOut className="h-5 w-5" />
+              </Button>
             </div>
-            <span className="text-lg font-bold">CreatorPro</span>
           </div>
         </div>
-
-        {/* Navigation Links */}
-        <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-          <SidebarLink 
-            href="/dashboard" 
-            icon={<LayoutDashboard className="h-5 w-5" />}
-            isActive={location === "/dashboard" || location === "/"}
-          >
-            {t("dashboard")}
-          </SidebarLink>
-          
-          <SidebarLink 
-            href="/projects" 
-            icon={<FolderKanban className="h-5 w-5" />}
-            isActive={location === "/projects"}
-          >
-            {t("projects")}
-          </SidebarLink>
-          
-          <SidebarLink 
-            href="/clients" 
-            icon={<Users className="h-5 w-5" />}
-            isActive={location === "/clients"}
-          >
-            {t("clients")}
-          </SidebarLink>
-          
-          <SidebarLink 
-            href="/time-tracker" 
-            icon={<Clock className="h-5 w-5" />}
-            isActive={location === "/time-tracker"}
-          >
-            {t("timeTracker")}
-          </SidebarLink>
-          
-          <SidebarLink 
-            href="/messages" 
-            icon={<MessageSquare className="h-5 w-5" />}
-            isActive={location === "/messages"}
-            badge={
-              <span className="absolute right-2 top-1/2 -translate-y-1/2 bg-destructive text-destructive-foreground rounded-full text-xs px-2 py-0.5">
-                3
-              </span>
-            }
-          >
-            {t("messages")}
-          </SidebarLink>
-          
-          <SidebarLink 
-            href="/files" 
-            icon={<FileIcon className="h-5 w-5" />}
-            isActive={location === "/files"}
-          >
-            {t("files")}
-          </SidebarLink>
-          
-          <SidebarLink 
-            href="/goals" 
-            icon={<Target className="h-5 w-5" />}
-            isActive={location === "/goals"}
-          >
-            {t("goals")}
-          </SidebarLink>
-          
-          <SidebarLink 
-            href="/finances" 
-            icon={<DollarSign className="h-5 w-5" />}
-            isActive={location === "/finances"}
-          >
-            {t("finances")}
-          </SidebarLink>
-          
-          <SidebarLink 
-            href="/ai-assistant" 
-            icon={<Bot className="h-5 w-5" />}
-            isActive={location === "/ai-assistant"}
-            badge={
-              <Badge variant="outline" className="absolute right-2 top-1/2 -translate-y-1/2 bg-accent text-accent-foreground">
-                {t("beta")}
-              </Badge>
-            }
-          >
-            {t("aiAssistant")}
-          </SidebarLink>
-          
-          <SidebarLink 
-            href="/settings" 
-            icon={<Settings className="h-5 w-5" />}
-            isActive={location === "/settings"}
-          >
-            {t("settings")}
-          </SidebarLink>
-        </div>
-
-        {/* User Profile and Settings */}
-        <div className="p-4 border-t">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <UserAvatar 
-                name={user?.username || "User"} 
-                size="sm" 
-              />
-            </div>
-            <div className="ml-3 flex-1">
-              <div className="text-sm font-medium">{user?.username}</div>
-              <div className="text-xs text-muted-foreground">{t("freePlan")}</div>
-            </div>
-            
-            {/* Theme Toggle Button */}
-            <button 
-              className="p-2 rounded-md hover:bg-muted" 
-              aria-label="Toggle theme"
-              onClick={toggleTheme}
-            >
-              {theme === 'dark' ? (
-                <Sun className="h-5 w-5" />
-              ) : (
-                <Moon className="h-5 w-5" />
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+      </aside>
+    </>
   );
 }
