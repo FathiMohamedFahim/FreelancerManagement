@@ -21,6 +21,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid request. Messages array is required." });
       }
       
+      // Check if OpenAI API key is configured
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(503).json({
+          error: "OpenAI API key not configured",
+          message: {
+            role: "assistant",
+            content: "I'm sorry, but the AI assistant is currently unavailable. The system administrator needs to configure the OpenAI API key.",
+            timestamp: new Date().toISOString()
+          }
+        });
+      }
+      
       const response = await createAIResponse(messages);
       
       return res.status(200).json({
@@ -32,9 +44,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Error in AI chat endpoint:", error);
+      
+      // Check for quota exceeded errors
+      const errorMessage = error.toString();
+      if (errorMessage.includes("quota") || errorMessage.includes("429") || errorMessage.includes("limit")) {
+        return res.status(429).json({
+          error: "API rate limit exceeded",
+          message: {
+            role: "assistant",
+            content: "I'm sorry, but the AI assistant has reached its usage limit. Please try again later or contact the administrator to update the API quota.",
+            timestamp: new Date().toISOString()
+          }
+        });
+      }
+      
       return res.status(500).json({ 
         error: "Failed to generate AI response", 
-        friendlyMessage: "Our AI assistant is currently unavailable. Please try again later." 
+        message: {
+          role: "assistant",
+          content: "I'm currently experiencing some technical difficulties. Please try again later.",
+          timestamp: new Date().toISOString()
+        }
       });
     }
   });
