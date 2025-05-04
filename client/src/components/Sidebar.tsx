@@ -141,10 +141,8 @@ export function Sidebar() {
       <aside className={sidebarClasses}>
         <div className="flex h-full flex-col overflow-y-auto">
           <div className="border-b border-border p-4">
-            <Link href="/dashboard">
-              <a className="flex items-center space-x-2">
-                <div className="font-bold text-2xl text-primary">CreatorPro</div>
-              </a>
+            <Link href="/dashboard" className="flex items-center space-x-2">
+              <div className="font-bold text-2xl text-primary">CreatorPro</div>
             </Link>
           </div>
 
@@ -152,18 +150,16 @@ export function Sidebar() {
             <ul className="space-y-1.5">
               {sidebarItems.map((item) => (
                 <li key={item.href}>
-                  <Link href={item.href}>
-                    <a
-                      className={cn(
-                        "flex items-center rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground",
-                        location === item.href
-                          ? "bg-accent text-accent-foreground"
-                          : "text-muted-foreground"
-                      )}
-                    >
-                      {item.icon}
-                      <span className="ml-3">{item.title}</span>
-                    </a>
+                  <Link href={item.href}
+                    className={cn(
+                      "flex items-center rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground",
+                      location === item.href
+                        ? "bg-accent text-accent-foreground"
+                        : "text-muted-foreground"
+                    )}
+                  >
+                    {item.icon}
+                    <span className="ml-3">{item.title}</span>
                   </Link>
                 </li>
               ))}
