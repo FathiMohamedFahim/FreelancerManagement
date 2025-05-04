@@ -34,31 +34,59 @@ export function Chatbot() {
   // Mutation for sending chat messages
   const chatMutation = useMutation({
     mutationFn: async (chatMessages: ChatMessage[]) => {
-      return apiRequest('POST', '/api/ai/chat', { messages: chatMessages });
+      const response = await apiRequest('POST', '/api/ai/chat', { messages: chatMessages });
+      return await response.json();
     },
-    onSuccess: (response) => {
-      if (response?.data) {
-        setMessages(prevMessages => [...prevMessages, response.data.message]);
+    onSuccess: (data) => {
+      if (data?.message) {
+        setMessages(prevMessages => [...prevMessages, data.message]);
       }
       setIsProcessing(false);
     },
-    onError: (error: any) => {
+    onError: async (error: any) => {
       console.error('Chat error:', error);
       
-      // Get a friendly message from the server if available
-      const friendlyMessage = error?.response?.data?.friendlyMessage || 
-                            'Failed to get a response. Please try again.';
+      // Extract error response data
+      let responseData;
+      try {
+        // Try to parse error response if it contains response data
+        if (error?.response) {
+          const errorResponse = await error.response.json();
+          responseData = errorResponse;
+        } else if (error?.message?.includes('fetch')) {
+          // Network error
+          responseData = { error: 'Network error', message: { content: 'Failed to connect to the server.' } };
+        } else {
+          responseData = { message: { content: error?.message || 'Unknown error occurred.' } };
+        }
+      } catch (parseError) {
+        console.error('Error parsing error response:', parseError);
+        responseData = { message: { content: 'Failed to get a response. Please try again.' } };
+      }
+      
+      // Check for specific error types from our backend
+      let errorTitle = 'Error';
+      let errorMessage = responseData?.message?.content || 
+                        responseData?.friendlyMessage || 
+                        'Failed to get a response. Please try again.';
+                        
+      // Handle API quota errors specifically
+      if (responseData?.error === 'API rate limit exceeded') {
+        errorTitle = 'API Quota Exceeded';
+      } else if (responseData?.error === 'OpenAI API key not configured') {
+        errorTitle = 'Configuration Error';
+      }
       
       // Add a message from the assistant about the error
       setMessages(prevMessages => [...prevMessages, {
         role: 'assistant',
-        content: friendlyMessage,
+        content: errorMessage,
         timestamp: new Date().toISOString()
       }]);
       
       toast({
-        title: 'Error',
-        description: friendlyMessage,
+        title: errorTitle,
+        description: errorMessage,
         variant: 'destructive',
       });
       

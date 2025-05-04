@@ -46,7 +46,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error in AI chat endpoint:", error);
       
       // Check for quota exceeded errors
-      const errorMessage = error.toString();
+      const errorMessage = error instanceof Error ? error.toString() : String(error);
       if (errorMessage.includes("quota") || errorMessage.includes("429") || errorMessage.includes("limit")) {
         return res.status(429).json({
           error: "API rate limit exceeded",
