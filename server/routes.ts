@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { storage } from "./storage";
 import { createAIResponse } from "./openai";
+import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault } from "./paypal";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes
@@ -216,6 +217,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error creating invoice:", error);
       return res.status(500).json({ error: "Failed to create invoice" });
     }
+  });
+  
+  // PayPal endpoints
+  app.get(`${apiPrefix}/paypal/setup`, async (req, res) => {
+    await loadPaypalDefault(req, res);
+  });
+
+  app.post(`${apiPrefix}/paypal/order`, async (req, res) => {
+    // Request body should contain: { intent, amount, currency }
+    await createPaypalOrder(req, res);
+  });
+
+  app.post(`${apiPrefix}/paypal/order/:orderID/capture`, async (req, res) => {
+    await capturePaypalOrder(req, res);
   });
 
   // Create HTTP server

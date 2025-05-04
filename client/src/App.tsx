@@ -21,6 +21,7 @@ import VodafonePayments from "@/pages/vodafone-payments";
 import Settings from "@/pages/settings";
 import AIAssistant from "@/pages/ai-assistant";
 import AuthPage from "@/pages/auth-page";
+import Payments from "@/pages/payments";
 
 function Router() {
   return (
@@ -38,6 +39,7 @@ function Router() {
       <ProtectedRoute path="/files" component={Files} />
       <ProtectedRoute path="/goals" component={Goals} />
       <ProtectedRoute path="/finances" component={Finances} />
+      <ProtectedRoute path="/payments" component={Payments} />
       <ProtectedRoute path="/vodafone-payments" component={VodafonePayments} />
       <ProtectedRoute path="/ai-assistant" component={AIAssistant} />
       <ProtectedRoute path="/settings" component={Settings} />
